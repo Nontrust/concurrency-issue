@@ -12,7 +12,15 @@ public class StockService {
     private final StockRepository stockRepository;
 
     @Transactional
-    public void decrease (Long id, Long quantity){
+    public void decreaseWithTransactionAnnotation(Long id, Long quantity){
+        this.stockControl(id, quantity);
+    }
+
+    public synchronized void decreaseWithSynchronizedKeyword(Long id, Long quantity){
+        this.stockControl(id, quantity);
+    }
+
+    private void stockControl(Long id, Long quantity){
         // Stock 조회
         Stock stock = stockRepository.findById(id).orElseThrow();
         // 재고감소
