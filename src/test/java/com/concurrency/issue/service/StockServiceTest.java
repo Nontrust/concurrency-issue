@@ -2,6 +2,7 @@ package com.concurrency.issue.service;
 
 import com.concurrency.issue.domain.Stock;
 import com.concurrency.issue.repository.StockRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,10 +16,14 @@ import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Slf4j
 @SpringBootTest
 class StockServiceTest {
     @Autowired
     private StockService stockService;
+    @Autowired
+    private OptimisticLockStockFacade optimisticLockStockFacade;
+
     @Autowired
     private StockRepository stockRepository;
 
@@ -76,6 +81,41 @@ class StockServiceTest {
         Stock decreasedStock = stockRepository.findById(TARGET_PRODUCT_ID).orElseThrow();
         assertEquals(0, decreasedStock.getQuantity());
 
+    }
+
+    @Test
+    public void 비관적_락사용_서비스에_동시에_100개_요청() throws Exception{
+        // given
+        ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE);
+        CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
+        Runnable targetService = () -> stockService.decreaseWithPessimisticLock(TARGET_PRODUCT_ID, 1L);
+
+        스레드_서비스_생셩(executorService, countDownLatch, targetService);
+        countDownLatch.await();
+
+        // then
+        Stock decreasedStock = stockRepository.findById(TARGET_PRODUCT_ID).orElseThrow();
+        assertEquals(0, decreasedStock.getQuantity());
+    }
+
+    @Test
+    public void 낙관적_락사용_서비스_동시에_100개_요청() throws Exception {
+        ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE);
+        CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
+        Runnable targetService = () -> {
+            try {
+                optimisticLockStockFacade.decreaseWithWithOptimisticLock(TARGET_PRODUCT_ID, 1L);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        스레드_서비스_생셩(executorService, countDownLatch, targetService);
+        countDownLatch.await();
+
+        // then
+        Stock decreasedStock = stockRepository.findById(TARGET_PRODUCT_ID).orElseThrow();
+        assertEquals(0, decreasedStock.getQuantity());
     }
 
     private void 스레드_서비스_생셩(ExecutorService executorService, CountDownLatch latch, Runnable runnable) throws Exception {
