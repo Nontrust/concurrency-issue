@@ -1,6 +1,6 @@
-package com.concurrency.issue.service;
+package com.concurrency.issue.repository;
 
-import com.concurrency.issue.repository.RedisLockRepository;
+import com.concurrency.issue.service.StockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
