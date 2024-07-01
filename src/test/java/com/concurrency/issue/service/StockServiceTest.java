@@ -30,7 +30,10 @@ class StockServiceTest {
     private NamedLockStockFacade namedLockStockFacade;
 
     @Autowired
-    private LettuceLockService lettuceLockRepository;
+    private LettuceLockServiceFacade lettuceLockServiceFacade;
+
+    @Autowired
+    private RedissonLockStockFacade redissonLockStockFacade;
 
     @Autowired
     private StockRepository stockRepository;
@@ -154,7 +157,28 @@ class StockServiceTest {
         CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
         Runnable targetService = () -> {
             try {
-                lettuceLockRepository.decrease(TARGET_PRODUCT_ID, 1L);
+                lettuceLockServiceFacade.decrease(TARGET_PRODUCT_ID, 1L);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        스레드_서비스_생셩(executorService, countDownLatch, targetService);
+        countDownLatch.await();
+
+        // then
+        Stock decreasedStock = stockRepository.findById(TARGET_PRODUCT_ID).orElseThrow();
+        assertEquals(0, decreasedStock.getQuantity());
+    }
+
+    @Test
+//    @Timeout(value = 3, unit = SECONDS)
+    public void Redisson_Pub_Sub_락_서비스_동시에_100개_요청() throws Exception{
+        ExecutorService executorService = Executors.newFixedThreadPool(POOL_SIZE);
+        CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
+        Runnable targetService = () -> {
+            try {
+                redissonLockStockFacade.decrease(TARGET_PRODUCT_ID, 1L);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
