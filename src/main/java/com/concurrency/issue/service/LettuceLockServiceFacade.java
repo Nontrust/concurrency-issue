@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class LettuceLockService {
+public class LettuceLockServiceFacade {
     private final RedisLockRepository redisLockRepository;
     private final StockService stockService;
 
