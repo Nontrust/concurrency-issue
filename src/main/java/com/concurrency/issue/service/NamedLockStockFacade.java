@@ -9,17 +9,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 @Component
 public class NamedLockStockFacade {
-    private final LockRepository lockRepository;
+    private final LockRepository mysqlLockRepository;
     private final StockService stockService;
+
 
     public void decrease(Long id, Long quantity){
         try{
-            lockRepository.getLock(id.toString());
+            mysqlLockRepository.getLock(id.toString());
             stockService.decreaseWhenRequireNewPropagation(id, quantity);
         } catch (Exception e){
             log.debug("retry get Named Lock ::: {}", e.getMessage());
         } finally {
-            lockRepository.releaseLock(id.toString());
+            mysqlLockRepository.releaseLock(id.toString());
         }
 
     }
