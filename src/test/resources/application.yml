@@ -11,7 +11,7 @@ spring:
     url: jdbc:mysql://127.0.0.1:53306/stock_example?serverTimezone=Asia/Seoul
     username: root
     password: 1234
-    # Lock ?? ? DB ?? ??? ?? ??? ? ???? default(10)?? ???? ??? 
+    # Lock 획득 시 DB 세션 정보가 많이 필요할 수 있음으로 default(10)보다 예측치를 높혀둠
     hikari:
       maximum-pool-size: 30
 
