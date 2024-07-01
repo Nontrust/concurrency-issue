@@ -1,14 +1,14 @@
-package com.concurrency.issue.repository;
+package com.concurrency.issue.service;
 
-import com.concurrency.issue.service.StockService;
+import com.concurrency.issue.repository.RedisLockRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @RequiredArgsConstructor
-@Repository
-public class LettuceLockRepository {
+@Service
+public class LettuceLockService {
     private final RedisLockRepository redisLockRepository;
     private final StockService stockService;
 
